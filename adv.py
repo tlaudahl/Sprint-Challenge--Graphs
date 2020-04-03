@@ -26,10 +26,36 @@ world.print_rooms()
 player = Player(world.starting_room)
 
 # Fill this out with directions to walk
-# traversal_path = ['n', 'n']
 traversal_path = []
 
+opposites = {'n':'s', 's':'n', 'e':'w', 'w':'e' }
 
+previous_room = [None]
+rooms = {}
+visited = {}
+
+def check_direction(room_id):
+    directions = []
+    for item in ['n', 's', 'e', 'w']:
+        if item in room_graph[room_id][1].keys():
+            directions.append(item)
+    return directions
+
+while len(visited) < len(room_graph):
+    room_id = player.current_room.id
+    if room_id not in rooms:
+        visited[room_id] = room_id
+        rooms[room_id] = check_direction(room_id)
+    
+    if len(rooms[room_id]) < 1:
+        previous_direction = previous_room.pop()
+        traversal_path.append(previous_direction)
+        player.travel(previous_direction)
+    else:
+        next_direction = rooms[room_id].pop()
+        traversal_path.append(next_direction)
+        previous_room.append(opposites[next_direction])
+        player.travel(next_direction)
 
 # TRAVERSAL TEST
 visited_rooms = set()
@@ -45,18 +71,3 @@ if len(visited_rooms) == len(room_graph):
 else:
     print("TESTS FAILED: INCOMPLETE TRAVERSAL")
     print(f"{len(room_graph) - len(visited_rooms)} unvisited rooms")
-
-
-
-#######
-# UNCOMMENT TO WALK AROUND
-#######
-player.current_room.print_room_description(player)
-while True:
-    cmds = input("-> ").lower().split(" ")
-    if cmds[0] in ["n", "s", "e", "w"]:
-        player.travel(cmds[0], True)
-    elif cmds[0] == "q":
-        break
-    else:
-        print("I did not understand that command.")
